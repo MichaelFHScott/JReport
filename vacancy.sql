@@ -1,0 +1,22 @@
+SELECT 
+company.CompanyID as V_CompanyID,
+Company.name AS V_CompanyName,
+Company.clientcode AS V_CompanyClientCode,
+Company.town AS V_CompanyTown,
+Company.county AS V_CompanyCounty,
+Company.country AS V_CompanyCountry,
+Company.postcode AS V_CompanyPostcode,
+(SELECT name FROM pears.companystatus WHERE companystatusid = company.status ) AS V_CompanyStatus,
+(SELECT descrip FROM pears.vacancyclass WHERE classcode = company.source ) AS V_CompanySource,
+(SELECT name FROM pears.division WHERE divisionid = company.divisionid ) AS V_CompanyDivision,
+vacancy.vacancyid as V_VacancyID,
+vacancy.StartDate as V_VacancyStartDate,
+vacancy.FinishDate as V_VacancyEndDate,
+Vacancy.Position as V_VacancyPosition,
+Vacancy.TheirRef as V_VacancyTheirRef,
+isnull(Vacancy.temp,0) as V_VacancyTemp,
+(if V_VacancyTemp=0 then 1 else 0 endif) as V_VacancyPerm,
+(select userid from pears.staff where staffid=Vacancy.staffid) as V_VacancyConsultant,
+(SELECT name FROM pears.status WHERE status = vacancy.status AND status.type = 'V' ) AS V_VacancyStatus,
+Person.name AS V_CompanyPersonName
+FROM pears.Vacancy KEY JOIN pears.employment KEY JOIN ( pears.Company , pears.Person )
