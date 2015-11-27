@@ -31,6 +31,7 @@ Vacancy.TheirRef as S_VacancyTheirRef,
 (select userid from pears.staff where staffid=Vacancy.staffid) as S_VacancyConsultant,
 (SELECT name FROM pears.status WHERE status = vacancy.status AND status.type = 'V' ) AS S_VacancyStatus,
 tempshift.tempshiftID as S_ShiftID,
+tempshift.tempshiftPlanID as S_PlanID,
 (case tempshift.state 
   when 'P' then 'Provisional'
   when 'B' then 'Booked'
@@ -47,3 +48,53 @@ tempshift.analysiscode as S_ShiftAnalysisCode,
 getshiftlength(tempshift.timefrom,tempshift.timeto,tempshift.breakminutes) as S_ShiftLengthHours,
 tempshift.breakminutes as S_ShiftBreakMinutes
 FROM pears.tempshift KEY JOIN (pears.person,(pears.vacancy key join pears.employment KEY JOIN ( pears.Company , pears.Person as CPerson )))
+
+UNION ALL
+
+SELECT 
+company.CompanyID as S_CompanyID,
+Company.name AS S_CompanyName,
+Company.clientcode AS S_CompanyClientCode,
+Company.town AS S_CompanyTown,
+Company.county AS S_CompanyCounty,
+Company.country AS S_CompanyCountry,
+Company.postcode AS S_CompanyPostcode,
+(SELECT name FROM pears.companystatus WHERE companystatusid = company.status ) AS S_CompanyStatus,
+(SELECT descrip FROM pears.vacancyclass WHERE classcode = company.source ) AS S_CompanySource,
+(SELECT name FROM pears.division WHERE divisionid = company.divisionid ) AS S_CompanyDivision,
+CPerson.name AS S_CompanyPersonName,
+null as S_PersonID,
+null AS S_PersonName,
+null AS S_PersonTown,
+null AS S_PersonCounty,
+null AS S_PersonCountry,
+null AS S_PersonPostcode,
+null as S_PersonPayrollNumber,
+null as S_PersonForenames,
+null as S_PersonSurname,
+null as S_PersonRegistrationNumber,
+null as S_PersonRegistrationDate,
+null AS S_PersonStatus,
+null as S_PersonConsultant,
+vacancy.VacancyID as S_VacancyID,
+vacancy.StartDate as S_VacancyStartDate,
+vacancy.FinishDate as S_VacancyEndDate,
+Vacancy.Position as S_VacancyPosition,
+Vacancy.TheirRef as S_VacancyTheirRef,
+(select userid from pears.staff where staffid=Vacancy.staffid) as S_VacancyConsultant,
+(SELECT name FROM pears.status WHERE status = vacancy.status AND status.type = 'V' ) AS S_VacancyStatus,
+null as S_ShiftID,
+tempshiftplan.tempshiftPlanID as S_PlanID,
+'Unfilled' as S_ShiftState,
+tempshiftplan.description AS S_ShiftDescription,
+(SELECT description FROM pears.tempshifttype WHERE tempshifttypeid = tempshiftplan.tempshifttypeid) AS S_ShiftType,
+null AS S_ShiftCancelReason,
+tempshiftplan.shiftdate as S_ShiftDate,
+tempshiftplan.timefrom as S_ShiftTimeFrom,
+tempshiftplan.timeto as S_ShiftTimeTo,
+tempshiftplan.analysiscode as S_ShiftAnalysisCode,
+getshiftlength(tempshiftplan.timefrom,tempshiftplan.timeto,tempshiftplan.breakminutes) as S_ShiftLengthHours,
+tempshiftplan.breakminutes as S_ShiftBreakMinutes
+FROM pears.tempshiftplan KEY JOIN pears.vacancy key join pears.employment KEY JOIN ( pears.Company , pears.Person as CPerson )
+WHERE tempshiftplan.tempshiftplanid not in (select tempshiftplanid from tempshift where vacancyid=tempshiftplan.vacancyid and shiftdate=tempshiftplan.shiftdate and (not (state='C' and crefill=1)) and tempshiftplanid is not null)
+
