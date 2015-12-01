@@ -33,6 +33,7 @@ isnull(Vacancy.temp,0) as R_VacancyTemp,
 (select userid from pears.staff where staffid=Vacancy.staffid) as R_VacancyConsultant,
 (SELECT name FROM pears.status WHERE status = vacancy.status AND status.type = 'V' ) AS R_VacancyStatus,
 progress.ProgressID as R_ProgressID,
-(SELECT name FROM pears.status WHERE status = progress.status AND status.type = 'R' ) AS R_ProgressStatus,
-progress.actiondate as R_ProgressActionDate
-FROM pears.progress KEY JOIN (pears.person,(pears.vacancy key join pears.employment KEY JOIN ( pears.Company , pears.Person as CPerson )))
+(SELECT name FROM pears.status WHERE status = distinctHistory.status AND status.type = 'R' ) AS R_ProgressStatus,
+(SELECT min(HistoryDate) from progresshistory where progressid=progress.ProgressID and status=distinctHistory.status) as R_ProgressDate
+FROM pears.progress KEY JOIN (pears.person,(pears.vacancy key join pears.employment KEY JOIN ( pears.Company , pears.Person as CPerson ))),
+pears.progress join (select distinct progressid,status from pears.progresshistory) as distinctHistory on distinctHistory.progressid = progress.progressid
