@@ -28,8 +28,8 @@ contactevent.ContactDate as V_ContactDate,
 contactevent.outcome as V_ContactOutcome,
 (select userid from pears.staff where staffid=contactevent.staffid) as V_ContactConsultant,
 contactevent.description as V_ContactDescription,
-(if contactevent.who in ('A','B') then 1 else 0 endif) as V_ToPerson,
-(if contactevent.who in ('C','B') then 1 else 0 endif) as V_ToCompany
+(if contactevent.employmentid is null or isnull(contactevent.who,'') in ('A','B') then 1 else 0 endif) as V_ToPerson,
+(if contactevent.personid is null or isnull(contactevent.who,'') in ('C','B') then 1 else 0 endif) as V_ToCompany
 FROM 
 pears.contactevent key left outer join (pears.employment KEY JOIN ( pears.Company , pears.Person as CPerson )),
 pears.contactevent key left outer join pears.person
